@@ -1,47 +1,37 @@
-#include <TM1638lite.h>
+#include <Wire.h>
+#include <BH1745NUC.h>
 
-// I/O pins on the Arduino connected to strobe, clock, data
-// (power should go to 3.3v and GND)
-TM1638lite tm(4, 7, 8);
+BH1745NUC senseColor(0x39);
 
 void setup() {
+  byte senseValue;
 
-  tm.reset();
-
-  tm.displayText("Eh");
-  tm.setLED(0, 1);
-  
-  delay(2000);
-
-  tm.displayASCII(6, 'u');
-  tm.displayASCII(7, 'p');
-  tm.setLED(7, 1);
-
-  delay(2000);
-
-  tm.displayHex(0, 8);
-  tm.displayHex(1, 9);
-  tm.displayHex(2, 10);
-  tm.displayHex(3, 11);
-  tm.displayHex(4, 12);
-  tm.displayHex(5, 13);
-  tm.displayHex(6, 14);
-  tm.displayHex(7, 15);
-
-  delay(2000);
-
-  tm.displayText("buttons");
+  Serial.begin(9600);
+  while (!Serial);
+  Serial.println("14CORE | COLOR SENSOR ");
+  Serial.println("Initializing .........");
+  delay(4000);
+  Wire.begin();
+  senseValue = senseColor.init();
 }
 
 void loop() {
-  uint8_t buttons = tm.readButtons();
-  doLEDs(buttons);
-}
-
-// scans the individual bits of value
-void doLEDs(uint8_t value) {
-  for (uint8_t position = 0; position < 8; position++) {
-    tm.setLED(position, value & 1);
-    value = value >> 1;
+  byte senseValue;
+  unsigned short rgbc[4];
+  
+  senseValue = senseColor.get_val(rgbc);
+  if (senseValue == 0) {
+    Serial.print("BH1745NUC (RED)   > ");
+    Serial.println(rgbc[0]);
+    Serial.print("BH1745NUC (GREEN) > ");
+    Serial.println(rgbc[1]);
+    Serial.print"BH1745NUC (BLUE)  > ");
+    Serial.println(rgbc[2]);
+    Serial.print("BH1745NUC (CLEAR) > ");
+    Serial.println(rgbc[3]);    
+    Serial.println();
   }
+ 
+  delay(500);
+
 }
